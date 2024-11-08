@@ -3,14 +3,19 @@ import pinecone
 import openai
 import streamlit as st
 import os
-from openai import OpenAI
+from zhipuai import ZhipuAI
 
 #openai.api_key = "" ## find at platform.openai.com
-model = SentenceTransformer('all-MiniLM-L6-v2')
+#model = SentenceTransformer('all-MiniLM-L6-v2')
 
-client = OpenAI(
-    # defaults to os.environ.get("OPENAI_API_KEY")
-    api_key=os.environ['OPENAI_API_KEY'],
+# Path to the local model directory
+local_model_path = './all-MiniLM-L6-v2'  # Adjust this path if needed
+
+# Load the model from the local directory
+model = SentenceTransformer(local_model_path)
+
+client = ZhipuAI(
+    api_key=os.environ['ZHIPUAI_API_KEY'],  # Set your API key
 )
 
 #pinecone.init(api_key=os.environ['PINECONE_API_KEY'])
@@ -74,19 +79,15 @@ def find_match(input):
 
 def query_refiner(conversation, query):
     response = client.chat.completions.create(
-        model="gpt-3.5-turbo",  # Use the latest model, adjust if needed
+        model="glm-4",  # Adjust the model name if needed
         messages=[
             {"role": "system", "content": "You are a helpful assistant."},
             {"role": "user", "content": f"Given the following user query and conversation log, formulate a question that would be the most relevant to provide the user with an answer from a knowledge base.\n\nCONVERSATION LOG: \n{conversation}\n\nQuery: {query}\n\nRefined Query:"}
         ],
-        temperature=0.7,
-        max_tokens=256,
-        top_p=1,
-        frequency_penalty=0,
-        presence_penalty=0
+        extra_body={"temperature": 0.7, "max_tokens": 256}
     )
+    print(response.choices[0].message.content)
     return response.choices[0].message.content
-
 
 def get_conversation_string():
     conversation_string = ""

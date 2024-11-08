@@ -1,6 +1,6 @@
 # Loading documents from a directory with LangChain
 from langchain.document_loaders import DirectoryLoader
-
+import os
 directory = 'data'
 
 def load_docs(directory):
@@ -28,12 +28,23 @@ query_result = embeddings.embed_query("Hello world")
 #Storing embeddings in Pinecone 
 import pinecone 
 from langchain.vectorstores import Pinecone
-pinecone.init(
-    api_key="",  # find at app.pinecone.io
-    environment=""  # next to api key in console
-)
-index_name = "langchain-chatbot"
-index = Pinecone.from_documents(docs, embeddings, index_name=index_name)
+# Initialize Pinecone
+pc = pinecone.Pinecone(api_key=os.environ.get('PINECONE_API_KEY'))
+
+# Check if the index exists; if not, create it
+if 'langchain-chatbot' not in pc.list_indexes().names():
+    pc.create_index(
+        name='langchain-chatbot', 
+        dimension=384,  # Adjust dimension according to your model
+        metric='cosine',
+        spec=pinecone.ServerlessSpec(
+            cloud='aws',
+            region='us-east-1'
+        )
+    )
+
+# Connect to the index
+index = pc.Index('langchain-chatbot')
 
 
 
