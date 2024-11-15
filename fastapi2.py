@@ -72,6 +72,6 @@ async def query(request: QueryRequest, db: Session = Depends(get_db)):
     context = find_match(refined_query)
     response = conversation.predict(input=f"Context:\n {context} \n\n Query:\n{query}")
 
-    url = "http://docs.fitfithealth.com.cn/namecard/autumn_leaves_about_to_wither.jpg"
-
+    #url = "http://docs.fitfithealth.com.cn/namecard/autumn_leaves_about_to_wither.jpg"
+    url = ""
     return {"response": response, "pic":url, "code":0}
